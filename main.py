@@ -75,7 +75,7 @@ def main():
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     
     with st.sidebar:
-        st.image("D:\Study\Projects\Automation\meeting-mate-1-638.webp", width=250)
+        st.image("D:\Study\Projects\Automation\logo.webp", width=250)
         st.title("MeetingMate")
         st.write("Manage your one-on-one meetings efficiently.")
 
