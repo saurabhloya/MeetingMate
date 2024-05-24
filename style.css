@@ -1,0 +1,34 @@
+styles.css
+body {
+    font-family: 'Arial', sans-serif;
+}
+.big-font {
+    font-size: 20px !important;
+}
+.header-font {
+    font-size: 24px !important;
+    font-weight: bold;
+    color: #0074D9;
+}
+.stButton>button {
+    background-color: #008CBA;
+    color: white;
+    font-size: 18px;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.stButton>button:hover {
+    background-color: #005f80;
+}
+.stTextInput>div>div>textarea {
+    font-size: 18px;
+    padding: 10px;
+}
+.stDataFrameContainer {
+    margin-top: 20px;
+}
+.sidebar .sidebar-content {
+    background-color: #f0f2f6;
+}
