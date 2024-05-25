@@ -36,9 +36,9 @@ def authenticate():
     return creds
 
 # Function to get upcoming meetings from Google Calendar
-def get_upcoming_meetings(service):
+def get_upcoming_meetings(service,days_ahead):
     now = datetime.utcnow()
-    end_time = now + timedelta(days=7)          #upcoming 7 days meetings
+    end_time = now + timedelta(days=days_ahead)          #upcoming 7 days meetings
     now_str = now.isoformat() + 'Z'  # 'Z' indicates UTC time
     end_time_str = end_time.isoformat() + 'Z'
 
@@ -55,7 +55,7 @@ def send_reminder_email(service, meeting, note):
     attendees = meeting['Participants'].split(",")
     for attendee in attendees:
         attendee=attendee.strip()
-        body = f"Hi {attendee},\n\nThis is a friendly reminder of your upcoming one-on-one meeting scheduled for {meeting['Date']} at {meeting['Start Time']}.\n\n{note}\n\nBest regards,\nThe H7 Accelerator Team"
+        body = f"Hi {attendee},\n\nThis is a friendly reminder of your upcoming one-on-one meeting scheduled.\n\n 📅 {meeting['Date']} \n ⏰ {meeting['Start Time']} to {meeting['End Time']}\n\n{note}\n\nBest regards,\nThe H7 Accelerator Team"
         message = MIMEText(body)
         message['to'] = attendee
         message['subject'] = subject
@@ -75,21 +75,32 @@ def main():
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     
     with st.sidebar:
-        st.image("D:\Study\Projects\Automation\logo.webp", width=250)
-        st.title("MeetingMate")
-        st.write("Manage your one-on-one meetings efficiently.")
+            
+        # Container to center align content
+        # st.markdown("<h1>MeetingMate</h1>", unsafe_allow_html=True)
+        st.image("D:\Study\Projects\Automation\logo.webp")
+        st.write(f'<p class="big-font">Manage your one-on-one meetings efficiently.</p>',unsafe_allow_html=True)
 
-    # Authenticate MeetingMate
-    creds = authenticate()
-    if creds:
-        service_calendar = build('calendar', 'v3', credentials=creds)
-        service_gmail = build('gmail', 'v1', credentials=creds)
-        st.sidebar.success("Authentication successful!")
-    else:
-        st.sidebar.error("Authentication failed. Please check your credentials.")
+        # Authenticate MeetingMate
+        creds = authenticate()
+        if creds:
+            service_calendar = build('calendar', 'v3', credentials=creds)
+            service_gmail = build('gmail', 'v1', credentials=creds)
+            st.sidebar.success("Authentication successful!")
+        else:
+            st.sidebar.error("Authentication failed. Please check your credentials.")
+
+        #line seperator
+        st.markdown('<hr class="separator">', unsafe_allow_html=True)
+
+        # st.write(f'<p class="big-font">Select days ahead to look for meetings:</p>',unsafe_allow_html=True)
+        st.write('<p class="big-font blinking-text">Select days ahead to look for meetings:</p>', unsafe_allow_html=True)
+       
+        # Options for users to select days ahead
+        days_ahead = st.selectbox(f' ',[1, 7, 15, 30],index=2)
 
     # Get upcoming meetings
-    meetings = get_upcoming_meetings(service_calendar)
+    meetings = get_upcoming_meetings(service_calendar,days_ahead)
 
     # Main content layout
     st.markdown('<p class="header-font">Upcoming One-on-One Meetings</p>', unsafe_allow_html=True)
@@ -104,28 +115,34 @@ def main():
             formatted_date = start_time.strftime('%Y-%m-%d')
             formatted_start_time = start_time.strftime('%I:%M %p')
             formatted_end_time = end_time.strftime('%I:%M %p')
-            participants = ', '.join(participant['email'] for participant in meeting['attendees'])
-            location = meeting.get('location', 'Not specified')
+            participants = ', '.join(participant['email'] for participant in meeting['attendees'] if not participant.get('organizer', False)) 
             meeting_data.append({
                 "Date": formatted_date,
                 "Start Time": formatted_start_time,
                 "End Time": formatted_end_time,
                 "Participants": participants,
-                # "Location": location,
                 "Select": False
             })
         meeting_df = pd.DataFrame(meeting_data)
+        meeting_df.reset_index(drop=True, inplace=True)
+        meeting_df.index += 1
+        meeting_df.rename_axis('Sr. No', inplace=True)
         edited_df = st.data_editor(meeting_df, use_container_width=True)        
 
-        st.markdown(f'<p class="big-font">Hi {{attendee}},<br>'
-            f'This is a friendly reminder of your upcoming one-on-one meeting scheduled for {{Date}} at {{Time}}', unsafe_allow_html=True)
-        note = st.text_area("", height=10,placeholder="Enter a brief note encouraging engagement for the reminder email")
-        st.markdown(f'Best regards,<br>The H7 Accelerator Team</p>',
-            unsafe_allow_html=True
-        )
+        # st.markdown(f'<p class="big-font">Hi {{attendee}},<br>'
+        #     f'This is a friendly reminder of your upcoming one-on-one meeting.<br>'
+        #     f'📅 {{Date}}<br>'
+        #     f'⏰ {{Start Time}}'' to {{End Time}}</p>', unsafe_allow_html=True)
+
+        st.markdown(f'<p class="big-font">Please feel free to customize the message below to encourage engagement for the reminder email:</p>', unsafe_allow_html=True)
+
+        default_message = "Your participation and insights are highly valued, and I'm looking forward to our discussion. Let's make this meeting both productive and enjoyable!"
+        placeholder = "Enter a brief note encouraging engagement for the reminder email"
+        note = st.text_area("Encouraging Message", height=10, value=default_message, placeholder=placeholder,label_visibility="collapsed")
+        # st.markdown(f'<p class="big-font">Best regards,<br>The H7 Accelerator Team</p>',unsafe_allow_html=True)
 
         # Button to send reminder email
-        if st.button("Send Reminder"):
+        if st.button("Send Reminder","Send Reminder"):
             selected_meetings_info = edited_df[edited_df["Select"]].to_dict("records")
             if not selected_meetings_info:
                 st.error("Please select at least one meeting.")
@@ -135,8 +152,7 @@ def main():
     else:
         # Display the message if no upcoming meeting
         st.markdown("## 🌟 No Upcoming Meetings Scheduled 🌟")
-        st.write("Your calendar for next 7 days is as clear as the sky on a perfect summer's day!")
-        st.write("Enjoy the freedom to focus on what truly matters to you!")
+        st.markdown(f'<p class="no-meeting">Your calendar is as clear as the sky on a perfect summer\'s day!<br> Enjoy the freedom to focus on what truly matters to you! </p>', unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
