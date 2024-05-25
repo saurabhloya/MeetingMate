@@ -77,7 +77,6 @@ def main():
     with st.sidebar:
             
         # Container to center align content
-        # st.markdown("<h1>MeetingMate</h1>", unsafe_allow_html=True)
         st.image("D:\Study\Projects\Automation\logo.webp")
         st.write(f'<p class="big-font">Manage your one-on-one meetings efficiently.</p>',unsafe_allow_html=True)
 
@@ -129,17 +128,11 @@ def main():
         meeting_df.rename_axis('Sr. No', inplace=True)
         edited_df = st.data_editor(meeting_df, use_container_width=True)        
 
-        # st.markdown(f'<p class="big-font">Hi {{attendee}},<br>'
-        #     f'This is a friendly reminder of your upcoming one-on-one meeting.<br>'
-        #     f'📅 {{Date}}<br>'
-        #     f'⏰ {{Start Time}}'' to {{End Time}}</p>', unsafe_allow_html=True)
-
         st.markdown(f'<p class="big-font">Please feel free to customize the message below to encourage engagement for the reminder email:</p>', unsafe_allow_html=True)
 
         default_message = "Your participation and insights are highly valued, and I'm looking forward to our discussion. Let's make this meeting both productive and enjoyable!"
         placeholder = "Enter a brief note encouraging engagement for the reminder email"
         note = st.text_area("Encouraging Message", height=10, value=default_message, placeholder=placeholder,label_visibility="collapsed")
-        # st.markdown(f'<p class="big-font">Best regards,<br>The H7 Accelerator Team</p>',unsafe_allow_html=True)
 
         # Button to send reminder email
         if st.button("Send Reminder","Send Reminder"):
