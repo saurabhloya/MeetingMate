@@ -96,7 +96,7 @@ def main():
         st.write('<p class="big-font blinking-text">Select days ahead to look for meetings:</p>', unsafe_allow_html=True)
        
         # Options for users to select days ahead
-        days_ahead = st.selectbox(f' ',[1, 7, 15, 30],index=2)
+        days_ahead = st.selectbox(f' ',[1, 7, 15, 30],index=0)
 
     # Get upcoming meetings
     meetings = get_upcoming_meetings(service_calendar,days_ahead)
